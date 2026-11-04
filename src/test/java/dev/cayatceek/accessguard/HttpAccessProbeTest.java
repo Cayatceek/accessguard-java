@@ -13,6 +13,16 @@ import org.junit.jupiter.api.Test;
 /** Integration test of the real java.net.http adapter against a local HTTP server. */
 class HttpAccessProbeTest {
     @Test
+    void refusesClientsThatSilentlyFollowAuthenticationRedirects() {
+        try (HttpClient redirecting = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS).build()) {
+            assertThrows(IllegalArgumentException.class,
+                () -> AccessProbe.http(redirecting, ignored ->
+                    HttpRequest.newBuilder(URI.create("http://127.0.0.1/")).GET().build()));
+        }
+    }
+
+    @Test
     void evaluatesRealHttpResponsesForTwoActors() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/documents/doc-1", exchange -> {

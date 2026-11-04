@@ -26,9 +26,13 @@ public final class ScenarioGenerator {
         if (actors.isEmpty() || resources.isEmpty() || operations.isEmpty()) {
             throw new IllegalArgumentException("actors, resources and operations must not be empty");
         }
-        long possible = (long) actors.size() * resources.size() * operations.size();
-        if (possible > MAX_SCENARIOS) {
-            throw new IllegalArgumentException("Too many scenarios (" + possible + "); limit: " + MAX_SCENARIOS);
+        // Avoid overflow before the limit check: three large list sizes can overflow long.
+        long possible = 1L;
+        for (int size : new int[] { actors.size(), resources.size(), operations.size() }) {
+            if (size > MAX_SCENARIOS / possible) {
+                throw new IllegalArgumentException("Too many scenarios; limit: " + MAX_SCENARIOS);
+            }
+            possible *= size;
         }
         List<Scenario> scenarios = new ArrayList<>((int) possible);
         for (Actor actor : actors) {

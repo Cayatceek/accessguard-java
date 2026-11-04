@@ -15,7 +15,10 @@ public interface AccessProbe {
     static AccessProbe http(HttpClient client, Function<Scenario, HttpRequest> requestFactory) {
         Objects.requireNonNull(client, "client");
         Objects.requireNonNull(requestFactory, "requestFactory");
-        return scenario -> client.send(requestFactory.apply(scenario),
+        if (client.followRedirects() != HttpClient.Redirect.NEVER) {
+            throw new IllegalArgumentException("Authorization probes must not follow redirects");
+        }
+        return scenario -> client.send(Objects.requireNonNull(requestFactory.apply(scenario), "request"),
             HttpResponse.BodyHandlers.discarding()).statusCode();
     }
 }
