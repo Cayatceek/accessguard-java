@@ -11,6 +11,9 @@ public final class AccessGuard {
     public static AccessReport verify(List<Scenario> scenarios, AccessProbe probe) {
         Objects.requireNonNull(scenarios, "scenarios");
         Objects.requireNonNull(probe, "probe");
+        if (scenarios.isEmpty()) {
+            throw new IllegalArgumentException("Refusing to report success for an empty test suite");
+        }
         List<CaseResult> results = new ArrayList<>();
         for (Scenario scenario : scenarios) {
             Objects.requireNonNull(scenario, "scenario");

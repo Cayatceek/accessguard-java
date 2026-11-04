@@ -26,6 +26,13 @@ AccessGuard.verify(scenarios, probe).assertSecure();
 
 The built-in `AccessProbe.http(HttpClient, requestFactory)` performs real HTTP requests using a caller-supplied `HttpRequest` factory. Credentials are never held in the scenario or report classes.
 
+## Safety guarantees added during validation
+
+- An empty scenario set fails instead of reporting a misleading success.
+- Scenario generation rejects oversized Cartesian products before integer overflow.
+- HTTP adapters reject clients configured to follow redirects; a redirect to a 200 page must not mask a denial.
+- HTTP 404 is treated as a denial only under the caller's reference policy; it can also represent a missing endpoint. Confirm resource fixtures exist.
+
 ## What it checks
 
 - Allowed operations: HTTP 2xx is a pass; 401/403/404 is an authorization failure.

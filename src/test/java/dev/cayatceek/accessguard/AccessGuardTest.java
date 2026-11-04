@@ -56,6 +56,21 @@ class AccessGuardTest {
     }
 
     @Test
+    void rejectsAnEmptySuiteInsteadOfReturningFalseSecurityAssurance() {
+        assertThrows(IllegalArgumentException.class,
+            () -> AccessGuard.verify(List.of(), scenario -> 200));
+    }
+
+    @Test
+    void rejectsOverflowingCartesianProductBeforeAllocating() {
+        var billions = java.util.Collections.nCopies(Integer.MAX_VALUE, OWNER);
+        var hugeResources = java.util.Collections.nCopies(Integer.MAX_VALUE, RECORD);
+        assertThrows(IllegalArgumentException.class,
+            () -> ScenarioGenerator.generate(billions, hugeResources,
+                List.of(Operation.READ, Operation.DELETE), ScenarioGenerator.ownerOrTenantAdmin()));
+    }
+
+    @Test
     void rejectsUnboundedCrossProducts() {
         var hugeActors = java.util.Collections.nCopies(10001, OWNER);
         assertThrows(IllegalArgumentException.class, () -> ScenarioGenerator.generate(
